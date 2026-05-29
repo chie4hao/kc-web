@@ -3,6 +3,9 @@ node_modules
 /dist
 /public/master_bk
 
+# kcAnalysis local master cache
+tests/kcAnalysis/.cache/
+
 
 # local env files
 .env.local
