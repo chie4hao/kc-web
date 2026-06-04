@@ -1,14 +1,14 @@
 /* eslint-disable no-console */
 /**
- * DD 昼戦火力ランキング(全スロ主砲版)
- *   - 全スロットに小口径主砲(★MAX)を装備した場合の昼戦砲撃「基礎火力」を算出
- *   - 制空権シミュレータ本体の計算ロジック(Ship/Item/ItemBonus)をそのまま利用
- *   - 装備補正(可視ボーナス) + 改修補正(√★等) を全て込みで評価
+ * DD 昼战火力排名(全槽主炮版)
+ *   - 算出全部槽位都装小口径主炮(★MAX)时的昼战炮击「基础火力」
+ *   - 直接复用制空权模拟器本体的计算逻辑(Ship/Item/ItemBonus)
+ *   - 装备补正(可视加成) + 改修补正(√★等) 全部计入
  *
- * 実行: npx tsx tests/kcAnalysis/ddFireFull.ts
+ * 运行: npx tsx tests/kcAnalysis/ddFireFull.ts
  *
- * 昼戦基礎火力(通常艦隊/単艦/対通常敵, ship.ts getDayBattleFirePower):
- *   = 素火力(近代化改修満) + 装備火力Σ + 可視装備補正 + 改修隠し補正Σ + 5
+ * 昼战基础火力(通常舰队/单舰/对通常敌, ship.ts getDayBattleFirePower):
+ *   = 素火力(近代化改修满) + 装备火力Σ + 可视装备补正 + 改修隐藏补正Σ + 5
  */
 import ShipMaster from '../../src/classes/fleet/shipMaster';
 import ItemMaster from '../../src/classes/item/itemMaster';
@@ -18,7 +18,7 @@ import { FLEET_TYPE, SHIP_TYPE } from '../../src/classes/const';
 import { loadMaster } from './loadMaster';
 
 const REMODEL = 10; // ★MAX 前提
-const MIX_TOP = 18; // 2種混載探索に使う上位主砲候補数
+const MIX_TOP = 18; // 2 种混载搜索使用的高火力主炮候选数
 
 async function main() {
   const master = await loadMaster();
@@ -26,7 +26,7 @@ async function main() {
   const itemMasters = new Map<number, ItemMaster>();
   for (const raw of master.items) itemMasters.set(raw.id, new ItemMaster(raw as never));
 
-  // 小口径主砲(apiType1)、深海(敵)装備を除外(id<1500)
+  // 小口径主炮(apiType1)、排除深海(敌)装备(id<1500)
   const isPlayer = (i: { name: string; id: number }) => !/深海/.test(i.name) && i.id < 1500;
   const gunCands: Item[] = master.items
     .filter((i) => i.type === 1 && isPlayer(i))
@@ -51,13 +51,13 @@ async function main() {
     if (slots <= 0) continue;
 
     let best: Best = { fp: -1, ids: [], sm };
-    // 全スロ同一砲
+    // 全槽同一炮
     for (const g of gunCands) {
       const ids = Array(slots).fill(g.data.id);
       const fp = evalLoadout(sm, ids);
       if (fp > best.fp) best = { fp, ids, sm };
     }
-    // 2種混載(組合せ補正拾い)
+    // 2 种混载(拾取组合补正)
     for (let a = 0; a < gunMix.length; a += 1) {
       for (let b = a + 1; b < gunMix.length; b += 1) {
         for (let k = 1; k < slots; k += 1) {
@@ -70,7 +70,7 @@ async function main() {
     results.push(best);
   }
 
-  // 同一艦は最強改造のみ
+  // 同一舰只保留最强改造
   const byOrig = new Map<number, Best>();
   for (const r of results) {
     const orig = r.sm.originalId || r.sm.id;
@@ -85,14 +85,14 @@ async function main() {
     return Object.entries(c).map(([n, k]) => `${n}×${k}`).join(' + ');
   };
 
-  console.log('==== DD 昼戦基礎火力 (全スロ主砲★MAX / 同一艦最強改造) TOP40 ====');
-  console.log('順位\t火力\t艦娘\tスロ\t最適主砲構成');
+  console.log('==== DD 昼战基础火力 (全槽主炮★MAX / 同一舰最强改造) TOP40 ====');
+  console.log('排名\t火力\t舰娘\t槽位\t最优主炮配置');
   uniq.slice(0, 40).forEach((r, i) => {
     console.log(`${i + 1}\t${r.fp.toFixed(2)}\t${r.sm.name}\t${r.sm.slotCount}\t${gunSummary(r.ids)}`);
   });
 
-  console.log('\n==== 火力内訳 TOP20 (素 / 装備 / 可視補正 / 改修補正 / 表示火力 / 基礎火力) ====');
-  console.log('艦娘\t素\t装備\t可視\t改修\t表示\t基礎');
+  console.log('\n==== 火力明细 TOP20 (素 / 装备 / 可视补正 / 改修补正 / 显示火力 / 基础火力) ====');
+  console.log('舰娘\t素\t装备\t可视\t改修\t显示\t基础');
   uniq.slice(0, 20).forEach((r) => {
     const items = r.ids.map((id) => new Item({ master: itemMasters.get(id)!, remodel: REMODEL, slot: 0 }));
     const ship = new Ship({ master: r.sm, level: 99, items, exItem: emptyItem });
