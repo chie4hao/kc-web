@@ -312,6 +312,14 @@ npx tsx tests/kcAnalysis/ddSummary32.ts result.txt   # 直接生成 UTF-8(无 BO
   fleethub 数据里 `evasion=[null,null]`, **算不了生存** → 该形态列入 pending 区(只显示进攻预览),
   不污染排名;同一舰若有"回避已知的较弱形态"(如 長波改二)则仍按它进排名。待社区测出回避后重跑即纳入。
   脚本靠 `ship.has_unknown_stat('evasion')` 检测。
+- **新船 fleethub 装备補正(fit-bonus)滞后(已知偏差, 待完善)**: 比回避更隐蔽。新改二補(743/744/745)
+  回避补上后已进排名(#10/#11),但 fleethub 的 `equipment-bonus` 包对它们的**装备 fit 補正仍不全**。
+  实测(探, Lv170)朝霜改二補 fit 火力補正 **+7**, 而朝霜改二 **+12**(**差约 5 火力**; 命中 −5 但已顶上限无影响,
+  回避 −2 微, 雷装 −4 昼战无关, 装甲一致)。后果: **改二補在 fleethub 里火力被低估约 5、进攻分偏低,
+  甚至低于对应改二** —— 而 **kc-web 的 ItemBonus 已更新(改二補 = 改二 +5 才是游戏真实)**, 两套引擎数据不同步。
+  npm 包(equipment-bonus 7.13.25 / fleethub-core 1.12.17)已是最新, 只能等 fleethub 作者补数据后
+  `npm update equipment-bonus && 删缓存重跑` 自动转正。**当前把改二補当作「≈对应改二、实际略强」看待即可。**
+  > 后续可加自动预警: 对每艘排名舰比对 kc-web 火力 vs fleethub 火力(naked+gear+ebonus), 差距过大就标注「fleethub 補正可能滞后」。
 
 ## 备忘 / 后续可扩展
 
