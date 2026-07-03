@@ -24,7 +24,8 @@ import * as zlib from 'zlib';
 import { fileURLToPath } from 'url';
 
 // 与本家 site/firebase.ts 相同的 GCS bucket
-const GCS_BASE = 'https://storage.googleapis.com/kcfleethub.appspot.com';
+// (2026-06-25 前是 kcfleethub.appspot.com, 之后旧 bucket 返回 403, 从应用 bundle 确认迁移到 kcfleethub)
+const GCS_BASE = 'https://storage.googleapis.com/kcfleethub';
 const MASTER_DATA_URL = `${GCS_BASE}/data/master_data.json`;
 const mapUrl = (mapId: number) => `${GCS_BASE}/data/maps/${mapId}.json`;
 

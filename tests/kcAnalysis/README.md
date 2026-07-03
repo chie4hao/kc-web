@@ -124,6 +124,10 @@ kc-web 的 master.json **不含敌舰**(只有自舰)。敌舰属性与海域编
 - 敌舰/装备属性: `…/data/master_data.json`
 - 海域编成·阵形: `…/data/maps/{mapId}.json` (3-2 = 32, brotli 压缩)
 
+> **bucket 迁移(2026-06-25)**: 旧 bucket `kcfleethub.appspot.com` 开始返回 403,
+> 新地址为 `https://storage.googleapis.com/kcfleethub`(从 jervis.vercel.app 的应用 bundle 里确认)。
+> `loadEnemy.ts` 已切到新地址; 若将来再 403, 用同样方法(抓应用 `_app-*.js` 里的 `storage.googleapis.com` 常量)找新 bucket。
+
 取得方式与 `loadMaster.ts` 相同的三段式(环境变量 → 缓存 → 下载)。
 环境变量为 `KC_FH_MASTER_DATA`(master_data 路径)和 `KC_FH_MAP_DIR`(`{mapId}.json` 放置目录)。
 
@@ -317,8 +321,11 @@ npx tsx tests/kcAnalysis/ddSummary32.ts result.txt   # 直接生成 UTF-8(无 BO
   实测(探, Lv170)朝霜改二補 fit 火力補正 **+7**, 而朝霜改二 **+12**(**差约 5 火力**; 命中 −5 但已顶上限无影响,
   回避 −2 微, 雷装 −4 昼战无关, 装甲一致)。后果: **改二補在 fleethub 里火力被低估约 5、进攻分偏低,
   甚至低于对应改二** —— 而 **kc-web 的 ItemBonus 已更新(改二補 = 改二 +5 才是游戏真实)**, 两套引擎数据不同步。
-  npm 包(equipment-bonus 7.13.25 / fleethub-core 1.12.17)已是最新, 只能等 fleethub 作者补数据后
-  `npm update equipment-bonus && 删缓存重跑` 自动转正。**当前把改二補当作「≈对应改二、实际略强」看待即可。**
+  2026-06-25 发布的 equipment-bonus 7.13.26 / fleethub-core 1.12.18 **仍未补**(直接调
+  `createEquipmentBonuses` 实测: 同装备下 朝霜改二補 fp+6 vs 朝霜改二 fp+12)。且**涼波改二(1034)同样缺**
+  (5/31 实装的 4 个新形态 743/744/745/1034 全没录, ebonus 里按 yomi+ctype 匹配也搜不到)。
+  只能等作者补数据后 `npm update equipment-bonus && 删缓存重跑` 自动转正。
+  **当前把改二補当作「≈对应改二、实际略强」、涼波改二按同样思路看待即可。**
   > 后续可加自动预警: 对每艘排名舰比对 kc-web 火力 vs fleethub 火力(naked+gear+ebonus), 差距过大就标注「fleethub 補正可能滞后」。
 
 ## 备忘 / 后续可扩展
